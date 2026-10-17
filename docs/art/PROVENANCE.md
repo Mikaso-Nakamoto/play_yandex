@@ -37,9 +37,9 @@
 | `cat-idle` | зелёный | `src/assets/cat/idle.png` | full-body sprite of the fluffy ginger cat from the reference, sitting, looking up and to the right, curious happy expression, tail around paws |
 | `cat-happy` | зелёный | `src/assets/cat/happy.png` | the exact same cat, celebrating: eyes closed in joyful crescents, wide smile, both front paws raised |
 | `cat-sad` | зелёный | `src/assets/cat/sad.png` | the exact same cat, sad but cute: ears drooping, teary eyes looking down, slumped |
-| `btn-wide-green` | пурпурный | `src/assets/ui/btn-{green,orange,blue,pink,cream}.png` | empty glossy pill-shaped game button, ~3:1, candy green, thick dark outline, white gloss band, 3D bottom edge, symmetrical front view |
-| `btn-round-orange` | зелёный | `src/assets/ui/round-{orange,green,blue,pink,red,purple,cream,gold}.png` | empty glossy round game button, candy orange, thick outline, gloss, 3D bottom edge |
-| `ribbon-pink` | зелёный | `src/assets/ui/ribbon-{pink,green,blue,orange}.png` | empty glossy pink satin title ribbon with folded V-notch tails on both ends, symmetrical |
+| `btn-wide-green` | пурпурный | *не используется* (глянцевый набор, `make-ui.sh --kit`) | empty glossy pill-shaped game button, ~3:1, candy green, thick dark outline, white gloss band, 3D bottom edge, symmetrical front view |
+| `btn-round-orange` | зелёный | *не используется* (глянцевый набор) | empty glossy round game button, candy orange, thick outline, gloss, 3D bottom edge |
+| `ribbon-pink` | зелёный | *не используется* (глянцевый набор) | empty glossy pink satin title ribbon with folded V-notch tails on both ends, symmetrical |
 | `icon-coin` | зелёный | `src/assets/ui/coin.png` | gold coin with embossed cat paw print, front view, thick outline |
 | `icon-bomb` | зелёный | `src/assets/ui/bomb.png` | cute round cartoon bomb, glossy navy sphere, fuse with yellow spark |
 | `icon-fire` | зелёный | `src/assets/ui/fire.png` | glossy orange-yellow fireball wrapped in stylized flames, crisp edges |
@@ -50,6 +50,8 @@
 - «no text, no letters»;
 - «centered with generous empty margin»;
 - «isolated on a perfectly flat solid pure green (#00FF00) background, no shadow».
+
+Глянцевые кнопки, шары-кнопки и ленты владелец счёл слишком глянцевыми и вычурными. В игре сейчас CSS-кнопки «мягкий мат» (`docs/design-system.md`), а исходники набора сохранены.
 
 ## Ещё не сделано
 - Горизонтальные фоны миров 3–7: пока широкий кадр собирается из вертикального.

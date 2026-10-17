@@ -6,11 +6,8 @@
 const WORLDS = 8;
 const LANDSCAPE = [0, 1, 2];
 const cache = new Map();
-// рисованные элементы интерфейса (src/assets/ui, src/assets/cat; пересборка — tools/art/make-ui.sh)
+// рисованные иконки и кот (src/assets/ui, src/assets/cat; пересборка — tools/art/make-ui.sh)
 const UI = [
-  'btn-green', 'btn-orange', 'btn-blue', 'btn-pink', 'btn-cream',
-  'round-orange', 'round-green', 'round-blue', 'round-pink', 'round-red', 'round-purple', 'round-cream', 'round-gold',
-  'ribbon-pink', 'ribbon-green', 'ribbon-blue', 'ribbon-orange',
   'coin', 'bomb', 'fire', 'rainbow',
 ].map((n) => 'ui/' + n).concat(['cat/idle', 'cat/happy', 'cat/sad']);
 const listeners = [];
@@ -69,8 +66,7 @@ export const assets = {
   },
 
   /**
-   * Рисованный интерфейс и кот: прогреваем кэш во время экрана загрузки, чтобы кнопки и иконки
-   * (CSS border-image / background) появились сразу. Не дольше timeoutMs — игра не ждёт сеть.
+   * Рисованные иконки и кот: прогреваем кэш во время экрана загрузки, чтобы они появились сразу. Не дольше timeoutMs — игра не ждёт сеть.
    */
   preloadUI(timeoutMs = 0) {
     const all = Promise.all(UI.map((n) => load(`assets/${n}.png`).promise));

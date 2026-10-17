@@ -77,7 +77,7 @@
 | [yoannmoinet/nipplejs](https://github.com/yoannmoinet/nipplejs), MIT | виртуальные джойстики | Бабл-шутеру не нужен: прицел — касанием или перетаскиванием |
 | [Kenney](https://github.com/KenneyNL) UI Packs, CC0 | готовые плоские спрайты интерфейса, 9-slice рамки | Наборы лежат на kenney.nl (на GitHub только стартовые проекты Godot). Плоский стиль не совпадает с рисованным ключевым артом |
 
-**Что взяли — сам приём 9-slice / 3-slice.** Кнопки, круглые кнопки и ленты теперь нарисованы в стиле ключевого арта (`src/assets/ui`). Края не растягиваются благодаря CSS `border-image`. Подробно — `docs/design-system.md`, раздел 4.
+**Что взяли — сам приём 9-slice / 3-slice.** С его помощью сделали нарисованный глянцевый набор: кнопки, круглые кнопки, ленты; края не растягивались благодаря CSS `border-image`. Владелец счёл набор слишком глянцевым и вычурным. Принят средний вариант: рисованные фоны, кот и иконки плюс аккуратные CSS-кнопки. Глянцевый набор можно вернуть командой `make-ui.sh --kit`. Подробно — `docs/design-system.md`, раздел 4.
 
 ## Что не пригодится в этом проекте
 - **Three.js и 3D-ARPG:** `build-isometric-arpg`, `build-game-camera-controls`, `build-game-monster-system`, `build-threejs-enemy-systems`, `tune-enemy-ai`, `design-action-combat`, `design-game-encounters`, `build-game-inventory`, `build-game-map-editor`, `build-mobile-threejs-games`, `optimize-threejs-games`, `build-vesperfall-review-assets`, `implement-fog-of-war`. У нас 2D canvas-головоломка.
