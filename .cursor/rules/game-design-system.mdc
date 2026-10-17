@@ -1,6 +1,6 @@
 ---
 description: Дизайн-система игры (тема «Сказочный луг»): палитра, типографика, глубина, движение, рисованные ресурсы
-globs: src/**/*.css, src/ui/**/*.js, src/game/art.js, src/game/renderer.js, src/core/assets.js, src/assets/**
+globs: src/**/*.css, src/ui/**/*.js, src/game/art.js, src/game/renderer.js, src/core/assets.js, src/assets/**, tools/art/**
 alwaysApply: false
 ---
 # Оформление — тема «Сказочный луг»
@@ -18,6 +18,11 @@ alwaysApply: false
   - Голубой — покупка за монеты.
   - Кремовый — второстепенное.
 - Глубина — многослойные тени: кант → обводка `--line` → «толщина» → мягкая тень.
+- Нарисованный интерфейс (`src/assets/ui`):
+  - кнопки и ленты — 3-slice через `border-image` на `::before`; цвет — через `--skin` и `--edge`;
+  - новые цвета — сдвигом тона в `tools/art/make-ui.sh`, не новой генерацией.
+- Текст на цветной кнопке или ленте: белый, обводка того же оттенка, только темнее (`--edge`). Шрифт `--font-display` (M PLUS Rounded 1c) — для кнопок, лент и чисел; Nunito — для текста.
+- Кот — спрайты `src/assets/cat/{idle,happy,sad}.png` (одинаковый масштаб). Векторный `drawCat` — только запасной вариант.
 - Заголовки на цвете: белый текст + `text-shadow: var(--outline)` + «толщина» `0 .12em 0 var(--ink)`. `-webkit-text-stroke` не использовать.
 - Движение:
   - нажатие 80–120 мс;

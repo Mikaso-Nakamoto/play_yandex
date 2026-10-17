@@ -90,6 +90,7 @@ release/                готовый архив для консоли
 promo/                  иконка, обложки, скриншоты, видео, иконки инапов, тексты черновика
 docs/                   yandex-audit.md (аудит), commercial-plan.md (план), design-system.md (оформление), art/, concept/
 src/assets/bg/          рисованные фоны миров (w<мир>-p/l.jpg), мастер-файлы — promo/src/bg/
+src/assets/ui|cat/      нарисованные кнопки, ленты, иконки и кот; исходники — promo/src/ui/, пересборка — tools/art/make-ui.sh
 .cursor/rules/          правила для Cursor: модерация и дизайн-система
 skills/                 навыки для ИИ-агентов (оглавление — skills/README.md), в архив игры не входят
 AGENTS.md               инструкция для ИИ-агентов: команды, цикл изменений, правила Яндекс Игр

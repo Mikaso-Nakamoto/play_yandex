@@ -4,7 +4,7 @@ import {
 } from './constants.js';
 import {
   makeCanvas, drawBubble, drawKittenBubble, drawKittenFace, drawStone, drawBomb, drawSpark,
-  drawRainbow, drawFireball, drawCat, drawBackground, drawPictureBg, THEMES, star, heart,
+  drawRainbow, drawFireball, drawCat, drawCatSprite, drawBackground, drawPictureBg, THEMES, star, heart,
 } from './art.js';
 import { assets } from '../core/assets.js';
 import { NEXT_OFFSET } from './engine.js';
@@ -545,7 +545,9 @@ export class Renderer {
     const catX = this.sx(CAT_X), catY = groundY + 4 * s;
     ctx.fillStyle = 'rgba(0,0,0,0.12)';
     ctx.beginPath(); ctx.ellipse(catX, catY, 34 * s, 6 * s, 0, 0, TAU); ctx.fill();
-    drawCat(ctx, catX, catY, CAT_H * s, this.time, this.catMood, look, this.catBlink > 0);
+    const sprite = assets.cat(this.catMood);
+    if (sprite) drawCatSprite(ctx, sprite, catX, catY + 2 * s, CAT_H * 1.12 * s, this.time, this.catMood);
+    else drawCat(ctx, catX, catY, CAT_H * s, this.time, this.catMood, look, this.catBlink > 0);
 
     // подставка пушки
     ctx.fillStyle = 'rgba(0,0,0,0.13)';

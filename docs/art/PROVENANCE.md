@@ -28,7 +28,30 @@
 ## Шаблон промпта — горизонтальный фон 16:9
 > Horizontal 16:9 wide desktop version of the reference game background (⟨мир⟩), same painted storybook style, same colors, same lighting and level of detail. Wide panorama: ⟨небо⟩ in the upper half; ⟨детали⟩ on the left and right sides; ⟨передний план⟩ along the bottom edge and in the bottom corners. The central vertical third of the image must stay calm and simple (open sky and soft distant hills) because the game field will be placed there. No characters, no animals, no bubbles, no text, no letters, no UI, no frame, full-bleed.
 
-## Ещё не сделано (следующий этап)
+## Интерфейс, кот, иконки (17.10.2026)
+Исходники хранятся без потерь, обрезаны по содержимому: `promo/src/ui/*.webp`. Игровые PNG собирает `bash tools/art/make-ui.sh`.
+Референс — `promo/src/keyart.png`; для эмоций кота — `cat-idle`, чтобы персонаж совпадал.
+
+| Исходник | Фон | Игровые файлы | Суть промпта |
+|---|---|---|---|
+| `cat-idle` | зелёный | `src/assets/cat/idle.png` | full-body sprite of the fluffy ginger cat from the reference, sitting, looking up and to the right, curious happy expression, tail around paws |
+| `cat-happy` | зелёный | `src/assets/cat/happy.png` | the exact same cat, celebrating: eyes closed in joyful crescents, wide smile, both front paws raised |
+| `cat-sad` | зелёный | `src/assets/cat/sad.png` | the exact same cat, sad but cute: ears drooping, teary eyes looking down, slumped |
+| `btn-wide-green` | пурпурный | `src/assets/ui/btn-{green,orange,blue,pink,cream}.png` | empty glossy pill-shaped game button, ~3:1, candy green, thick dark outline, white gloss band, 3D bottom edge, symmetrical front view |
+| `btn-round-orange` | зелёный | `src/assets/ui/round-{orange,green,blue,pink,red,purple,cream,gold}.png` | empty glossy round game button, candy orange, thick outline, gloss, 3D bottom edge |
+| `ribbon-pink` | зелёный | `src/assets/ui/ribbon-{pink,green,blue,orange}.png` | empty glossy pink satin title ribbon with folded V-notch tails on both ends, symmetrical |
+| `icon-coin` | зелёный | `src/assets/ui/coin.png` | gold coin with embossed cat paw print, front view, thick outline |
+| `icon-bomb` | зелёный | `src/assets/ui/bomb.png` | cute round cartoon bomb, glossy navy sphere, fuse with yellow spark |
+| `icon-fire` | зелёный | `src/assets/ui/fire.png` | glossy orange-yellow fireball wrapped in stylized flames, crisp edges |
+| `icon-rainbow` | белый | `src/assets/ui/rainbow.png` | glossy rainbow bubble with swirling stripes, thick dark purple outline |
+
+Общие требования в промптах:
+- «soft painted storybook style of the reference image»;
+- «no text, no letters»;
+- «centered with generous empty margin»;
+- «isolated on a perfectly flat solid pure green (#00FF00) background, no shadow».
+
+## Ещё не сделано
 - Горизонтальные фоны миров 3–7: пока широкий кадр собирается из вертикального.
-- Рисованный кот (ожидание / радость / грусть) и котята в шариках — генерация на зелёном фоне + вырезание.
-- Рисованные иконки: монета-лапка, бомба, радуга, огненный шар, подарок.
+- Котята в шариках: пока векторные.
+- Декор карты.

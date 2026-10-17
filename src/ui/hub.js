@@ -4,18 +4,6 @@ import { icon } from './icons.js';
 import { t, fmt } from '../core/i18n.js';
 import { store } from '../core/storage.js';
 import { LEVELS_PER_WORLD, worldOf, WORLD_COUNT } from '../game/levels.js';
-import { drawCat, makeCanvas } from '../game/art.js';
-
-let catUrl = '';
-function catAvatar() {
-  if (!catUrl) {
-    const c = makeCanvas(128, 128);
-    const x = c.getContext('2d');
-    drawCat(x, 64, 122, 112, 0, 'happy', null, false);
-    catUrl = c.toDataURL();
-  }
-  return catUrl;
-}
 
 export class Hub {
   constructor(app) {
@@ -39,7 +27,7 @@ export class Hub {
     this.playBtn = h('button', { class: 'btn btn-green play-btn', onclick: () => app.playCurrent() });
     this.dailyBadge = h('span', { class: 'badge dot hidden' });
     const hb = (ico, label, fn, extra) => h('button', { class: 'hub-btn', onclick: fn },
-      h('span', { class: 'round', html: icon(ico) }, extra || null), h('span', { class: 'lbl' }, label));
+      h('span', { class: 'round hb-' + ico, html: icon(ico) }, extra || null), h('span', { class: 'lbl' }, label));
     this.lbBtn = hb('trophy', t('leaderboard'), () => app.openLeaderboard());
     this.bottom = h('div', { id: 'hub-bottom' },
       this.playBtn,
@@ -174,7 +162,7 @@ export class Hub {
         for (let i = 0; i < 3; i++) st.insertAdjacentHTML('beforeend', icon(i < stars ? 'starOn' : 'starOff'));
         node.appendChild(st);
       }
-      if (state === 'cur') node.appendChild(h('img', { class: 'avatar', src: catAvatar(), alt: '' }));
+      if (state === 'cur') node.appendChild(h('img', { class: 'avatar', src: 'assets/cat/idle.png', alt: '' }));
       chunk.appendChild(node);
     }
     this.map.appendChild(chunk);

@@ -257,6 +257,24 @@ export function heart(ctx, x, y, s) {
 
 // ---------- Кошка-мама ----------
 /**
+ * Рисованный кот (спрайт): x, y — середина низа, h — высота «ожидания» в пикселях экрана.
+ * Все эмоции нарезаны в одном масштабе, поэтому масштаб общий: по высоте спрайта idle (371 px).
+ * Оживление: дыхание, прыжки от радости, лёгкое «оседание» в грусти.
+ */
+export function drawCatSprite(ctx, img, x, y, h, t, mood = 'idle') {
+  const k = h / 371;
+  const w = img.naturalWidth * k, hh = img.naturalHeight * k;
+  const breathe = Math.sin(t * 2.2) * 0.014;
+  const hop = mood === 'happy' ? -Math.abs(Math.sin(t * 7)) * h * 0.07 : 0;
+  const squash = mood === 'sad' ? 0.97 : 1;
+  ctx.save();
+  ctx.translate(x, y + hop);
+  ctx.scale(1 - breathe * 0.5, (1 + breathe) * squash);
+  ctx.drawImage(img, -w / 2, -hh, w, hh);
+  ctx.restore();
+}
+
+/**
  * x, y — точка «сидения» (низ), s — высота кошки в пикселях.
  * mood: 'idle' | 'happy' | 'sad'; look — угол взгляда (рад) или null.
  */

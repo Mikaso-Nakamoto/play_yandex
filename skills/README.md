@@ -68,6 +68,17 @@
 
 Сами наборы из awesome-cursorrules в репозиторий не копировали: для игры они бесполезны.
 
+## Библиотеки из списка владельца (проверено 17.10.2026)
+| Библиотека | Что это | Вывод для «Мяу-шариков» |
+|---|---|---|
+| [rexrainbow/phaser3-rex-notes](https://github.com/rexrainbow/phaser3-rex-notes) (RexUI), MIT | компоненты интерфейса для движка Phaser | Игра без движка (canvas + HTML). RexUI даёт поведение и раскладку, но не внешний вид. Переезд на Phaser — переписывание игры без выигрыша в красоте |
+| [pixijs/ui](https://github.com/pixijs/ui), MIT | кнопки, слайдеры, скролл для PixiJS | То же: привязано к движку PixiJS, визуального стиля не даёт |
+| [pmndrs/uikit](https://github.com/pmndrs/uikit) | интерфейсы внутри 3D-сцены (React Three Fiber) | Для 3D, у нас 2D |
+| [yoannmoinet/nipplejs](https://github.com/yoannmoinet/nipplejs), MIT | виртуальные джойстики | Бабл-шутеру не нужен: прицел — касанием или перетаскиванием |
+| [Kenney](https://github.com/KenneyNL) UI Packs, CC0 | готовые плоские спрайты интерфейса, 9-slice рамки | Наборы лежат на kenney.nl (на GitHub только стартовые проекты Godot). Плоский стиль не совпадает с рисованным ключевым артом |
+
+**Что взяли — сам приём 9-slice / 3-slice.** Кнопки, круглые кнопки и ленты теперь нарисованы в стиле ключевого арта (`src/assets/ui`). Края не растягиваются благодаря CSS `border-image`. Подробно — `docs/design-system.md`, раздел 4.
+
 ## Что не пригодится в этом проекте
 - **Three.js и 3D-ARPG:** `build-isometric-arpg`, `build-game-camera-controls`, `build-game-monster-system`, `build-threejs-enemy-systems`, `tune-enemy-ai`, `design-action-combat`, `design-game-encounters`, `build-game-inventory`, `build-game-map-editor`, `build-mobile-threejs-games`, `optimize-threejs-games`, `build-vesperfall-review-assets`, `implement-fog-of-war`. У нас 2D canvas-головоломка.
 - **Лендинги и веб-темы:** большинство `web-design/*`, `Agent-Design-Skills/*-layout*`, `shadcn-ui-design-system`, `google-material-design-3`, `framer-motion-system`, `cinematic-gsap-lenis-motion-system` и т. п. Это сайты, а не игровые интерфейсы.

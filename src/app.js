@@ -415,7 +415,7 @@ export class App {
       proceed();
     };
     const body = h('div', null,
-      h('div', { style: { width: '5em', height: '5em', margin: '0 auto' }, html: icon(e.goal === 'kittens' ? 'kitten' : 'bubbles') }),
+      h('img', { class: 'pop-cat', src: 'assets/cat/sad.png', alt: '' }),
       h('p', null, info),
       h('div', { class: 'btns' },
         platform.hasSdk ? rv : null,
@@ -429,7 +429,7 @@ export class App {
   openFail() {
     const n = this.levelNum;
     const body = h('div', null,
-      h('div', { style: { width: '5em', height: '5em', margin: '0 auto' }, html: icon('kitten') }),
+      h('img', { class: 'pop-cat', src: 'assets/cat/sad.png', alt: '' }),
       h('p', null, t('level_failed_sub')),
       h('div', { class: 'btns-row' },
         h('button', { class: 'btn btn-gray', onclick: () => this.leaveToHub(true) }, h('span', { html: icon('map') }), t('map')),

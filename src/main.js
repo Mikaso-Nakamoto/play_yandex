@@ -30,7 +30,10 @@ function pointerShim() {
 function waitFonts(ms) {
   if (!document.fonts || !document.fonts.load) return Promise.resolve();
   return Promise.race([
-    Promise.all([document.fonts.load('900 20px Nunito'), document.fonts.load('800 20px Nunito')]).catch(() => {}),
+    Promise.all([
+      document.fonts.load('900 20px Nunito', 'АаZz09'), document.fonts.load('800 20px Nunito', 'АаZz09'),
+      document.fonts.load('800 20px "Meow Rounded"', 'АаZzŞş09'), // заголовочный шрифт: кириллица, латиница, турецкий
+    ]).catch(() => {}),
     new Promise((r) => setTimeout(r, ms)),
   ]);
 }
@@ -58,7 +61,7 @@ async function boot() {
   // Рисованный фон стартового мира грузим, пока виден загрузчик (не дольше 1,5 с — дальше подменится сам)
   const wide = window.innerWidth > window.innerHeight * 1.1;
   const startWorld = worldOf(store.data.level);
-  await Promise.all([safe(() => app.syncTime()), safe(() => platform.initPayments()), waitFonts(1200), assets.preload(startWorld, wide, 1500)]);
+  await Promise.all([safe(() => app.syncTime()), safe(() => platform.initPayments()), waitFonts(1200), assets.preload(startWorld, wide, 1500), assets.preloadUI(2000)]);
   await safe(() => app.processPurchases());
   app.start();
 
