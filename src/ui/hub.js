@@ -149,8 +149,10 @@ export class Hub {
       }
     });
     const svg = `<svg class="map-path" width="${W}" height="${this.totalH}" viewBox="0 0 ${W} ${this.totalH}">` +
-      `<path d="${dpath}" stroke="rgba(58,36,99,.25)" stroke-width="${this.fs * 1.5}" fill="none" stroke-linecap="round"/>` +
-      `<path d="${dpath}" stroke="#fff" stroke-width="${this.fs * 0.55}" stroke-dasharray="${this.fs * 0.2} ${this.fs * 0.9}" fill="none" stroke-linecap="round"/></svg>`;
+      // песчаная тропинка: тёплая кромка, песок, светлые «камешки»
+      `<path d="${dpath}" stroke="rgba(120,72,40,.30)" stroke-width="${this.fs * 1.75}" fill="none" stroke-linecap="round"/>` +
+      `<path d="${dpath}" stroke="rgba(250,228,183,.92)" stroke-width="${this.fs * 1.3}" fill="none" stroke-linecap="round"/>` +
+      `<path d="${dpath}" stroke="#fffaf0" stroke-width="${this.fs * 0.5}" stroke-dasharray="${this.fs * 0.25} ${this.fs * 0.85}" fill="none" stroke-linecap="round"/></svg>`;
     chunk.insertAdjacentHTML('beforeend', svg);
     // баннер мира
     const banner = h('div', { class: 'world-banner', style: { top: (this.nodeY(first) + this.gap * 0.55) + 'px' } },

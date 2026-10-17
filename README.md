@@ -2,7 +2,7 @@
 
 **Мяу-шарики** (en: *Meow Bubbles*, tr: *Miyav Baloncukları*) — HTML5-игра в жанре бабл-шутер (стрелялка шариками), сделанная под требования [Яндекс Игр](https://yandex.ru/dev/games/doc/ru/concepts/requirements). Игрок помогает рыжему коту освобождать котят из разноцветных пузырей.
 
-Архив для загрузки уже собран: **`release/meow-bubbles-yandex-v1.0.0.zip`** (~140 КБ, `index.html` в корне). Промо-материалы и тексты черновика на трёх языках лежат в папке `promo/`.
+Архив для загрузки уже собран: **`release/meow-bubbles-yandex-v1.1.0.zip`** (~1,3 МБ, `index.html` в корне). Промо-материалы и тексты черновика на трёх языках лежат в папке `promo/`.
 
 ---
 
@@ -80,7 +80,7 @@ src/                    исходники игры
   main.js               запуск: SDK → язык → сохранения → покупки → интерфейс → LoadingAPI.ready()
   app.js                контроллер: экраны, уровни, реклама, покупки, обучение, магазин
   style.css             интерфейс
-  core/                 platform.js (обёртка SDK), storage.js, i18n.js, audio.js, rng.js
+  core/                 platform.js (обёртка SDK), storage.js, i18n.js, audio.js, assets.js (картинки), rng.js
   game/                 engine.js (геймплей), board.js, rules.js, levels.js, level-table.js,
                         renderer.js, art.js, bot.js (бот для калибровки и промо)
   ui/                   hub.js (карта), hud.js, popups.js, icons.js, dom.js
@@ -88,7 +88,9 @@ src/                    исходники игры
 tools/                  сборка, тесты, генераторы промо
 release/                готовый архив для консоли
 promo/                  иконка, обложки, скриншоты, видео, иконки инапов, тексты черновика
-docs/                   yandex-audit.md (аудит модерации), commercial-plan.md (план развития), concept/
+docs/                   yandex-audit.md (аудит), commercial-plan.md (план), design-system.md (оформление), art/, concept/
+src/assets/bg/          рисованные фоны миров (w<мир>-p/l.jpg), мастер-файлы — promo/src/bg/
+.cursor/rules/          правила для Cursor: модерация и дизайн-система
 skills/                 навыки для ИИ-агентов (оглавление — skills/README.md), в архив игры не входят
 AGENTS.md               инструкция для ИИ-агентов: команды, цикл изменений, правила Яндекс Игр
 ```
@@ -104,7 +106,7 @@ AGENTS.md               инструкция для ИИ-агентов: ком�
 
 ### 4.2. Новая игра и архив
 1. Консоль → **Игры** → **Добавить игру**.
-2. На вкладке **Черновик** загрузите `release/meow-bubbles-yandex-v1.0.0.zip`.
+2. На вкладке **Черновик** загрузите `release/meow-bubbles-yandex-v1.1.0.zip`.
 
 ### 4.3. Поля черновика
 Все тексты готовы, их нужно только скопировать:

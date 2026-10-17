@@ -4,6 +4,8 @@ import { store } from './core/storage.js';
 import { setLang, t } from './core/i18n.js';
 import { App } from './app.js';
 import { chooseShot } from './game/bot.js';
+import { assets } from './core/assets.js';
+import { worldOf } from './game/levels.js';
 
 // Простейший полифилл Pointer Events для старых iOS (Safari < 13)
 function pointerShim() {
@@ -51,8 +53,12 @@ async function boot() {
   const app = new App();
   window.__app = app;
   if (/[?&]test=1/.test(location.search)) window.__bot = { chooseShot };
+  app.assets = assets;
   app.init();
-  await Promise.all([safe(() => app.syncTime()), safe(() => platform.initPayments()), waitFonts(1200)]);
+  // Рисованный фон стартового мира грузим, пока виден загрузчик (не дольше 1,5 с — дальше подменится сам)
+  const wide = window.innerWidth > window.innerHeight * 1.1;
+  const startWorld = worldOf(store.data.level);
+  await Promise.all([safe(() => app.syncTime()), safe(() => platform.initPayments()), waitFonts(1200), assets.preload(startWorld, wide, 1500)]);
   await safe(() => app.processPurchases());
   app.start();
 
@@ -61,6 +67,8 @@ async function boot() {
   // Игра готова к взаимодействию — сообщаем платформе
   platform.loadingReady();
   if (!store.data.noAds) platform.showBanner();
+  // следующий мир — заранее, чтобы на карте и при переходе фон появился сразу
+  setTimeout(() => assets.preload(startWorld + 1, wide), 2500);
 }
 
 window.addEventListener('error', (e) => { console.warn('[game error]', e.message); });

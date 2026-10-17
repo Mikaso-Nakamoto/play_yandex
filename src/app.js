@@ -12,7 +12,7 @@ import { Popups } from './ui/popups.js';
 import { Hub } from './ui/hub.js';
 import { Hud, BOOSTERS } from './ui/hud.js';
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const DAILY = [
   { coins: 50 }, { coins: 80 }, { bomb: 1 }, { coins: 120 }, { rainbow: 1, coins: 50 }, { coins: 180 }, { coins: 300, bomb: 1, fire: 1 },
 ];

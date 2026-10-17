@@ -41,6 +41,9 @@ fs.writeFileSync(path.join(dist, 'index.html'), html);
 // 4. Шрифты
 for (const f of fs.readdirSync(path.join(src, 'fonts'))) fs.copyFileSync(path.join(src, 'fonts', f), path.join(dist, 'fonts', f));
 
+// 4б. Картинки (рисованные фоны и т. п.)
+if (fs.existsSync(path.join(src, 'assets'))) fs.cpSync(path.join(src, 'assets'), path.join(dist, 'assets'), { recursive: true });
+
 // 5. Проверки требований к архиву
 const files = [];
 (function walk(d) {

@@ -45,7 +45,7 @@ for (const lang of LANGS) {
       if (sc.hub) {
         await g.page.evaluate(() => { const a = window.__app; a.popups.closeAll(); a.showHub(); });
         await g.step(40);
-        await g.page.evaluate(() => window.__app.popups.closeAll());
+        await g.page.evaluate(async () => { window.__app.popups.closeAll(); if (window.__app.assets) await window.__app.assets.idle(); });
         await g.step(15);
         await g.snap(file, 90);
       } else {

@@ -379,6 +379,72 @@ function rng(seed) {
   return () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; };
 }
 
+/**
+ * Рисованный фон из картинки.
+ * extend = false: «cover» с привязкой к низу (земля, на которой сидит кошка, всегда видна).
+ * extend = true: вертикальная картинка на широком экране — размытая подложка на весь экран
+ * и чёткая картинка по центру (под полем) с растушёванными краями.
+ * s — масштаб холста (чтобы центральная картинка оставалась чёткой на экранах с высокой плотностью).
+ */
+export function drawPictureBg(ctx, img, w, h, extend, s = 1) {
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+  if (!extend) {
+    const k = Math.max(w / iw, h / ih);
+    ctx.drawImage(img, (w - iw * k) / 2, h - ih * k, iw * k, ih * k);
+    return;
+  }
+  // 1) подложка: картинка по высоте экрана + зеркальные копии слева и справа (горизонт совпадает),
+  //    затем мягкое размытие ступенчатым уменьшением/увеличением (работает везде, без ctx.filter)
+  const cw = iw * (h / ih);
+  const q = 8;
+  const m = makeCanvas(w / q, h / q);
+  const mx = m.getContext('2d');
+  const tile = cw / q, th = h / q, x0 = (m.width - tile) / 2;
+  for (let i = -Math.ceil(x0 / tile) - 1; x0 + i * tile < m.width; i++) {
+    const x = x0 + i * tile;
+    if (i % 2 === 0) mx.drawImage(img, x, 0, tile, th);
+    else { mx.save(); mx.translate(x + tile, 0); mx.scale(-1, 1); mx.drawImage(img, 0, 0, tile, th); mx.restore(); }
+  }
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(softBlur(m, 3), 0, 0, w, h);
+  ctx.fillStyle = 'rgba(255,250,240,0.16)';
+  ctx.fillRect(0, 0, w, h);
+  // 2) чёткая картинка по центру (под полем), края растушёваны
+  const c = makeCanvas(cw * s, h * s);
+  const cx = c.getContext('2d');
+  cx.drawImage(img, 0, 0, c.width, c.height);
+  cx.globalCompositeOperation = 'destination-in';
+  const g = cx.createLinearGradient(0, 0, c.width, 0);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(0.16, 'rgba(0,0,0,1)');
+  g.addColorStop(0.84, 'rgba(0,0,0,1)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  cx.fillStyle = g;
+  cx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(c, (w - cw) / 2, 0, cw, h);
+  ctx.restore();
+}
+
+/** Мягкое размытие: steps раз уменьшить вдвое и столько же раз увеличить (близко к гауссову, без «квадратов») */
+function softBlur(src, steps) {
+  let c = src;
+  const chain = [];
+  for (let i = 0; i < steps; i++) {
+    const d = makeCanvas(c.width / 2, c.height / 2);
+    const x = d.getContext('2d'); x.imageSmoothingEnabled = true;
+    x.drawImage(c, 0, 0, d.width, d.height);
+    chain.push(c); c = d;
+  }
+  for (let i = steps - 1; i >= 0; i--) {
+    const u = makeCanvas(chain[i].width, chain[i].height);
+    const x = u.getContext('2d'); x.imageSmoothingEnabled = true;
+    x.drawImage(c, 0, 0, u.width, u.height);
+    c = u;
+  }
+  return c;
+}
+
 export function drawBackground(ctx, w, h, worldIdx) {
   const th = THEMES[worldIdx % THEMES.length];
   const R = rng(worldIdx * 977 + 13);

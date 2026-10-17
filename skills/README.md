@@ -40,14 +40,33 @@
 | author-game-levels | [`Skills-main/agent-skills/game-development/author-game-levels`](Skills-main/agent-skills/game-development/author-game-levels/SKILL.md) | Навык для 3D-уровней; берём только идеи о темпе, ориентирах и целях (Фаза 5) |
 | build-game-changelog | [`Skills-main/agent-skills/game-development/build-game-changelog`](Skills-main/agent-skills/game-development/build-game-changelog/SKILL.md) | По желанию: окно «Что нового» после обновлений |
 
-### Интерфейс и дизайн
-| Навык | Путь | Как используем |
+### Интерфейс и дизайн — применены в теме «Сказочный луг» (v1.1)
+Итог работы — [`docs/design-system.md`](../docs/design-system.md) (дизайн-система игры) и правила для Cursor в `.cursor/rules/`.
+
+| Навык | Путь | Что взяли |
 |---|---|---|
-| refactoring-ui | [`Agent-Design-Skills/refactoring-ui`](Agent-Design-Skills/refactoring-ui/) | Иерархия, контраст, отступы. Без чистого чёрного (Фаза 1, «конфетный» интерфейс) |
-| beautiful-shadows | [`Agent-Design-Skills/beautiful-shadows`](Agent-Design-Skills/beautiful-shadows/) | Многослойные мягкие тени для кнопок и окон |
-| animation-systems | [`Agent-Design-Skills/animation-systems`](Agent-Design-Skills/animation-systems/) | Длительности 120–200 / 180–260 / 220–320 мс, ease-out, задержка между элементами 40–90 мс |
-| apple-hig-design | [`Agent-Design-Skills/apple-hig-design`](Agent-Design-Skills/apple-hig-design/) | Зоны касания ≥ 44 px, отклик нажатия (scale 0.96), safe-area |
-| frontend-design | [`Agent-Design-Skills/frontend-design`](Agent-Design-Skills/frontend-design/) | Как уйти от «шаблонного» вида: смелая единая тема |
+| frontend-design | [`Agent-Design-Skills/frontend-design`](Agent-Design-Skills/frontend-design/) | Отказ от «шаблонного ИИ-вида»: убрали «общий фиолетовый» и плоские белые карточки. Палитра 60-30-10 из ключевого арта. Авторские состояния кнопок |
+| refactoring-ui | [`Agent-Design-Skills/refactoring-ui`](Agent-Design-Skills/refactoring-ui/) | Тёплые тонированные нейтральные вместо чистого чёрного (`--ink`), иерархия весом и цветом, метки разделов капсом с разрядкой, плитки фоном вместо линий |
+| beautiful-shadows | [`Agent-Design-Skills/beautiful-shadows`](Agent-Design-Skills/beautiful-shadows/) | Многослойные тени «кант → обводка → толщина → мягкая тень», все тени тёплые (`rgba(var(--warm), a)`) |
+| animation-systems | [`Agent-Design-Skills/animation-systems`](Agent-Design-Skills/animation-systems/) | Длительности: нажатие 80–120 мс, появление 320 мс, закрытие быстрее, каскад 40–90 мс; `prefers-reduced-motion` |
+| apple-hig-design | [`Agent-Design-Skills/apple-hig-design`](Agent-Design-Skills/apple-hig-design/) | Зоны касания ≥ 44 px, отклик нажатия, safe-area |
+| build-hybrid-game-assets | [`Skills-main/agent-skills/game-development/build-hybrid-game-assets`](Skills-main/agent-skills/game-development/build-hybrid-game-assets/SKILL.md) | Рисованные фоны 8 миров как ресурсы игры, журнал промптов [`docs/art/PROVENANCE.md`](../docs/art/PROVENANCE.md) |
+| design-first-ui-prompting | [`Agent-Design-Skills/design-first-ui-prompting`](Agent-Design-Skills/design-first-ui-prompting/) | Промпты к картинкам как спецификации: цель, композиция, запреты |
+
+Остальные дизайн-навыки коллекции (`google-material-design-3`, `shadcn-ui-design-system`, `blue-*`, `book-serif-index`, WebGL-эффекты, скролл-анимации) — для сайтов и продуктовых интерфейсов, к казуальной игре не подходят.
+
+## Внешний источник: PatrickJS/awesome-cursorrules
+Просмотрен 17.10.2026: 257 наборов правил для Cursor, лицензия CC0.
+- **Что там:** правила под фреймворки (Next.js, React, Svelte, Vue, Tailwind, shadcn), языки и тестирование.
+- **Игры:** Unity, GameMaker, DragonRuby, Blender, ASCII-игры. Под HTML5/canvas-игры ничего нет.
+- **Дизайн:**
+  - `toss-style-design-system` — сдержанный банковский интерфейс, противоположность казуальной игре;
+  - `landing-page-image-quality` — общие правила про картинки (свои ресурсы вместо заглушек, лицензии) — у нас уже соблюдено.
+- **Что взяли:** формат `.mdc` с frontmatter (`description`, `globs`, `alwaysApply`). По нему сделаны правила этого проекта:
+  - [`.cursor/rules/yandex-games.mdc`](../.cursor/rules/yandex-games.mdc) — модерация и цикл изменений, всегда;
+  - [`.cursor/rules/game-design-system.mdc`](../.cursor/rules/game-design-system.mdc) — оформление, для файлов интерфейса и графики.
+
+Сами наборы из awesome-cursorrules в репозиторий не копировали: для игры они бесполезны.
 
 ## Что не пригодится в этом проекте
 - **Three.js и 3D-ARPG:** `build-isometric-arpg`, `build-game-camera-controls`, `build-game-monster-system`, `build-threejs-enemy-systems`, `tune-enemy-ai`, `design-action-combat`, `design-game-encounters`, `build-game-inventory`, `build-game-map-editor`, `build-mobile-threejs-games`, `optimize-threejs-games`, `build-vesperfall-review-assets`, `implement-fog-of-war`. У нас 2D canvas-головоломка.

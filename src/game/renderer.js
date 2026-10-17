@@ -4,8 +4,9 @@ import {
 } from './constants.js';
 import {
   makeCanvas, drawBubble, drawKittenBubble, drawKittenFace, drawStone, drawBomb, drawSpark,
-  drawRainbow, drawFireball, drawCat, drawBackground, THEMES, star, heart,
+  drawRainbow, drawFireball, drawCat, drawBackground, drawPictureBg, THEMES, star, heart,
 } from './art.js';
+import { assets } from '../core/assets.js';
 import { NEXT_OFFSET } from './engine.js';
 import { pointAt, pathLength } from './board.js';
 import { audio, vibrate } from '../core/audio.js';
@@ -22,6 +23,8 @@ export class Renderer {
     this.ctx = canvas.getContext('2d');
     this.dpr = 1; this.w = 1; this.h = 1;
     this.L = null;
+    // догрузилась картинка фона — перерисовать фон, если он для текущего мира изменился
+    assets.onLoad(() => { if (this.w > 1) this.ensureBg(); });
     this.world = 0;
     this.bg = null; this.bgKey = '';
     this.sprites = new Map(); this.spriteR = 0;
@@ -58,14 +61,20 @@ export class Renderer {
   setWorld(i) { if (i !== this.world) { this.world = i; this.bgKey = ''; this.ensureBg(); } }
 
   ensureBg() {
-    const key = `${this.world}|${this.w}x${this.h}|${this.dpr}`;
+    // Рисованный фон мира, если картинка уже загружена; иначе процедурный (загрузка запускается сама)
+    const wide = this.w > this.h * 1.1;
+    const pic = assets.background(this.world, wide);
+    const kind = pic ? (pic.landscape ? 'L' : 'P') : 'proc';
+    const key = `${this.world}|${this.w}x${this.h}|${this.dpr}|${kind}`;
     if (key === this.bgKey) return;
     this.bgKey = key;
     const s = Math.min(this.dpr, 1.5);
     const c = makeCanvas(this.w * s, this.h * s);
     const x = c.getContext('2d');
     x.scale(s, s);
-    drawBackground(x, this.w, this.h, this.world);
+    this.bgPainted = !!pic;
+    if (pic) drawPictureBg(x, pic.img, this.w, this.h, wide && !pic.landscape, s);
+    else drawBackground(x, this.w, this.h, this.world);
     this.bg = c;
   }
 
@@ -324,10 +333,13 @@ export class Renderer {
 
     // Панель поля
     const top = Math.max(L.fy - 2, this.sy(-8));
-    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    const pg = ctx.createLinearGradient(0, top, 0, groundY);
+    pg.addColorStop(0, 'rgba(255,255,255,0.30)');
+    pg.addColorStop(1, 'rgba(255,255,255,0.20)');
+    ctx.fillStyle = pg;
     roundRect(ctx, L.fx + 1, top, L.fw - 2, groundY - top + 4, Math.min(18, 14 * s));
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -502,18 +514,27 @@ export class Renderer {
   drawLaunchArea(dt, lx, ly, groundY, launchTop) {
     const ctx = this.ctx, e = this.engine, L = this.L, s = L.scale;
     const th = THEMES[this.world % THEMES.length];
-    // земля во всю ширину
-    const g = ctx.createLinearGradient(0, groundY, 0, this.h);
-    g.addColorStop(0, th.ground[0]);
-    g.addColorStop(1, th.ground[1]);
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(0, this.h);
-    for (let x = 0; x <= this.w + 20; x += 20) {
-      ctx.lineTo(x, groundY + Math.sin(x * 0.03 + 1.3) * 3 * s + (Math.abs(x - lx) < 70 * s ? -4 * s * Math.cos((x - lx) / (70 * s) * Math.PI / 2) : 0));
+    if (this.bgPainted) {
+      // рисованный фон: вместо сплошной земли — мягкая тень снизу, передний план картинки остаётся виден
+      const g = ctx.createLinearGradient(0, groundY - 8 * s, 0, this.h);
+      g.addColorStop(0, hexA(th.ground[0], 0));
+      g.addColorStop(1, hexA(th.ground[1], 0.5));
+      ctx.fillStyle = g;
+      ctx.fillRect(0, groundY - 8 * s, this.w, this.h - groundY + 8 * s);
+    } else {
+      // земля во всю ширину
+      const g = ctx.createLinearGradient(0, groundY, 0, this.h);
+      g.addColorStop(0, th.ground[0]);
+      g.addColorStop(1, th.ground[1]);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(0, this.h);
+      for (let x = 0; x <= this.w + 20; x += 20) {
+        ctx.lineTo(x, groundY + Math.sin(x * 0.03 + 1.3) * 3 * s + (Math.abs(x - lx) < 70 * s ? -4 * s * Math.cos((x - lx) / (70 * s) * Math.PI / 2) : 0));
+      }
+      ctx.lineTo(this.w, this.h); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2; ctx.stroke();
     }
-    ctx.lineTo(this.w, this.h); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2; ctx.stroke();
 
     // кошка-мама
     this.catBlinkT -= dt;
@@ -677,7 +698,7 @@ export class Renderer {
           ctx.globalAlpha = a;
           ctx.font = `900 ${Math.round(p.size * s * k)}px ${FONT}`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.lineWidth = 4 * s; ctx.strokeStyle = 'rgba(60,30,90,0.8)';
+          ctx.lineWidth = 4 * s; ctx.strokeStyle = 'rgba(75,46,57,0.85)'; // --ink темы
           ctx.strokeText(p.text, this.sx(p.x), this.sy(p.y));
           ctx.fillStyle = '#fff';
           ctx.fillText(p.text, this.sx(p.x), this.sy(p.y));
@@ -776,7 +797,8 @@ export class Renderer {
       ctx.font = `900 ${size}px ${FONT}`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.lineWidth = size * 0.16; ctx.lineJoin = 'round';
-      ctx.strokeStyle = '#7b2fbf';
+      ctx.strokeStyle = '#4b2e39'; // --ink темы: «толщина» снизу + обводка
+      ctx.strokeText(pr.text, x, y + size * 0.07);
       ctx.strokeText(pr.text, x, y);
       const g = ctx.createLinearGradient(0, y - size / 2, 0, y + size / 2);
       g.addColorStop(0, '#fff6a8'); g.addColorStop(1, '#ffb22e');
@@ -796,4 +818,11 @@ export function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
+}
+
+/** '#rrggbb' → 'rgba(r,g,b,a)' */
+function hexA(hex, a) {
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(hex || '');
+  if (!m) return `rgba(0,0,0,${a})`;
+  return `rgba(${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)},${a})`;
 }

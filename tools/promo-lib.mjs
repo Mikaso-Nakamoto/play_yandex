@@ -51,6 +51,7 @@ export async function openGame(browser, { base, lang = 'ru', vp = 'portrait', sa
   }
   await page.goto(`${base}?lang=${lang}&test=1&fastads=1${query ? '&' + query : ''}`, { waitUntil: 'load' });
   await page.waitForFunction(() => window.__app && window.__app.screen === 'hub' && window.__vt, { timeout: 20000 });
+  await page.evaluate(() => window.__app.assets && window.__app.assets.idle()); // рисованные фоны загружены
   await page.addStyleTag({ content: '#mock-panel{display:none!important}' });
   await page.evaluate(() => document.fonts && document.fonts.ready);
   await sleep(200);
@@ -95,6 +96,7 @@ export async function startScene(page, { level, seed = 1, plan = null, noise = 0
     };
     window.__vt.seed(seed * 31 + 7); // стартовое поле бесконечного режима строится через Math.random
     if (level === 'endless') await app.startEndless(); else app.startLevel(level);
+    if (app.assets) await app.assets.idle(); // фон мира уровня загружен до первого кадра
     const e = app.engine;
     e.random = mulberry32(seed * 7919 + 17);
     e.cur = e._randColor(); e.next = e._randColor();

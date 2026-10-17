@@ -7,6 +7,7 @@
 ## Общение
 - С владельцем проекта — **на русском**. Комментарии в коде тоже на русском (так принято в проекте).
 - Если пользователь не просил иного, ключевой арт `promo/src/keyart.png` (выбран владельцем) не заменять. Он — эталон стиля для любой новой графики.
+- Оформление — по дизайн-системе [`docs/design-system.md`](docs/design-system.md) (тема «Сказочный луг»): токены `:root` в `src/style.css`, без «сырых» цветов и чистого чёрного. Для Cursor те же правила — в `.cursor/rules/`.
 
 ## Команды
 | Команда | Что делает |
@@ -30,12 +31,13 @@
 - `src/` — игра. Это единственное, что попадает в архив.
   - `main.js` — загрузка: SDK → язык → игрок/сохранения → покупки → интерфейс → `LoadingAPI.ready()`.
   - `app.js` — экраны, попапы, реклама, магазин, пауза.
-  - `core/` — `platform.js` (вся работа с SDK), `storage.js` (локальные и облачные сохранения), `i18n.js` (ru/en/tr), `audio.js` (WebAudio), `rng.js`.
+  - `core/` — `platform.js` (вся работа с SDK), `storage.js` (локальные и облачные сохранения), `i18n.js` (ru/en/tr), `audio.js` (WebAudio), `assets.js` (ленивая загрузка картинок), `rng.js`.
+  - `assets/bg/` — рисованные фоны миров `w<мир>-<p|l>.jpg` (p — вертикальный, l — горизонтальный). Мастер-файлы — в `promo/src/bg/`, промпты — в `docs/art/PROVENANCE.md`.
   - `game/` — движок, рендер canvas, процедурная графика (`art.js`), бот, уровни, `level-table`.
   - `ui/` — карта уровней (`hub.js`), HUD, попапы, иконки.
 - `tools/` — сборка, dev-сервер, мок-SDK, тесты, промо-конвейер (детерминированное виртуальное время `vtime.js` + `promo-lib.mjs`).
 - `promo/` — материалы для консоли: тексты ru/en/tr, иконка, обложки, скриншоты, видео, покупки (`purchases.csv`).
-- `docs/` — [`yandex-audit.md`](docs/yandex-audit.md) (аудит модерации), [`commercial-plan.md`](docs/commercial-plan.md) (план развития), `concept/`.
+- `docs/` — [`yandex-audit.md`](docs/yandex-audit.md) (аудит модерации), [`commercial-plan.md`](docs/commercial-plan.md) (план развития), [`design-system.md`](docs/design-system.md) (оформление), `art/PROVENANCE.md`, `concept/`.
 - `skills/` — навыки для агентов, оглавление в [`skills/README.md`](skills/README.md). В сборку не входят.
 - `release/` — готовый архив для загрузки в консоль (коммитится).
 
