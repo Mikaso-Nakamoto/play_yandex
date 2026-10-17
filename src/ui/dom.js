@@ -49,36 +49,46 @@ export function bump(el) {
  * Возвращает объект с методами update() и scrollTo().
  */
 export function makeScroller(viewport, content, opts = {}) {
-  let y = 0, vy = 0, dragging = false, lastY = 0, lastT = 0, startY = 0, moved = 0, raf = 0;
+  let y = 0, vy = 0, dragging = false, lastY = 0, lastT = 0, startY = 0, moved = 0, raf = 0, frameT = 0;
+  let pid = null; // палец, который ведёт прокрутку (второй палец игнорируем)
   const min = () => Math.min(0, viewport.clientHeight - content.scrollHeight - (opts.padBottom || 0));
   const apply = () => { content.style.transform = `translate3d(0, ${Math.round(y)}px, 0)`; if (opts.onScroll) opts.onScroll(y); };
   const clampY = () => { y = Math.max(min(), Math.min(0, y)); };
-  const tick = () => {
-    if (dragging) return;
+  // инерция по реальному времени кадра: одинаковая на 60 и 120 Гц и при просадках кадров
+  const tick = (now) => {
+    if (dragging) { raf = 0; return; }
+    const dt = Math.min(50, Math.max(0, now - frameT));
+    frameT = now;
     if (Math.abs(vy) < 0.02) { raf = 0; return; }
-    y += vy * 16; vy *= 0.94;
+    y += vy * dt; vy *= Math.pow(0.94, dt / 16.7);
     const m = min();
     if (y > 0 || y < m) { clampY(); vy = 0; }
     apply();
     raf = requestAnimationFrame(tick);
   };
   viewport.addEventListener('pointerdown', (e) => {
+    if (dragging && e.pointerId !== pid && !e.isPrimary) return; // второй палец
+    pid = e.pointerId;
     dragging = true; moved = 0; startY = lastY = e.clientY; lastT = performance.now(); vy = 0;
     if (raf) { cancelAnimationFrame(raf); raf = 0; }
   });
   window.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
+    if (!dragging || e.pointerId !== pid) return;
     const dy = e.clientY - lastY;
     const now = performance.now();
     moved = Math.max(moved, Math.abs(e.clientY - startY));
     y += dy; clampY(); apply();
-    vy = dy / Math.max(1, now - lastT);
+    // сглаженная скорость: один «рваный» отсчёт не превращается в бросок
+    const inst = dy / Math.max(8, now - lastT);
+    vy = vy * 0.3 + inst * 0.7;
     lastY = e.clientY; lastT = now;
   });
-  const end = () => {
-    if (!dragging) return;
-    dragging = false;
-    if (Math.abs(vy) > 0.05) raf = requestAnimationFrame(tick);
+  const end = (e) => {
+    if (!dragging || e.pointerId !== pid) return;
+    dragging = false; pid = null;
+    // палец остановился перед отпусканием — без броска
+    if (e.type === 'pointercancel' || performance.now() - lastT > 80) vy = 0;
+    if (Math.abs(vy) > 0.05) { frameT = performance.now(); raf = requestAnimationFrame(tick); }
   };
   window.addEventListener('pointerup', end);
   window.addEventListener('pointercancel', end);

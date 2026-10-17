@@ -11,6 +11,7 @@
     "test": "node tools/test-logic.mjs",
     "test:flow": "node tools/build.mjs && node tools/flow-test.mjs",
     "test:soak": "node tools/build.mjs && node tools/soak.mjs",
+    "test:touch": "node tools/build.mjs && node tools/touch-test.mjs && node tools/touch-test.mjs --shim",
     "simulate": "node tools/simulate.mjs",
     "levels": "node tools/gen-level-table.mjs 1000",
     "promo:art": "node tools/promo-art.mjs",

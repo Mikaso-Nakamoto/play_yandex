@@ -27,6 +27,8 @@ export class Engine {
     this.projectile = null;
     this.pendingSwap = false;
     this.downInfo = null;
+    this.pressHeld = null;   // палец на поле: { swap, x, y, lx, ly } (касание могло начаться, пока шарик летел)
+    this.queued = null;      // выстрел, отпущенный во время перезарядки: { x, y, angle, t }
     this.shotsFired = 0;
     this.continues = 0;
     this.combo = 0;
@@ -135,8 +137,13 @@ export class Engine {
   pointerDown(wx, wy) {
     if (this.state === 'intro') { this.skipIntro(); return; }
     if (this.state === 'win-seq') { this.skipWinSequence(); return; }
+    this.queued = null;
+    // касание засчитываем даже во время полёта шарика: как только можно целиться, палец «подхватится»
+    const near = this._nearLauncher(wx, wy);
+    // lx/ly — последняя точка пальца относительно экрана (не зависит от сдвига камеры)
+    this.pressHeld = { swap: near, x: wx, y: wy, lx: wx, ly: wy - this.camY };
     if (this.state !== 'aim') return;
-    if (this._nearLauncher(wx, wy)) {
+    if (near) {
       this.downInfo = { swap: true, x: wx, y: wy };
       this.aim.active = false;
       return;
@@ -146,7 +153,13 @@ export class Engine {
   }
 
   pointerMove(wx, wy, pressed) {
-    if (this.state !== 'aim') { this.aim.active = false; return; }
+    if (this.state !== 'aim') {
+      if (this.pressHeld && pressed) { this.pressHeld.lx = wx; this.pressHeld.ly = wy - this.camY; }
+      this.aim.active = false;
+      return;
+    }
+    // палец коснулся, пока шарик летел, и всё ещё на поле — теперь это обычное прицеливание
+    if (!this.downInfo && this.pressHeld && pressed) this.downInfo = { ...this.pressHeld };
     if (this.downInfo && this.downInfo.swap) {
       if (Math.hypot(wx - this.downInfo.x, wy - this.downInfo.y) > D) this.downInfo.swap = false;
       else return;
@@ -161,15 +174,29 @@ export class Engine {
   }
 
   pointerUp(wx, wy) {
-    const info = this.downInfo;
+    let info = this.downInfo;
+    const held = this.pressHeld;
     this.downInfo = null;
+    this.pressHeld = null;
     if (this.state !== 'aim') { this.aim.active = false; return; }
+    // касание началось во время полёта шарика, а отпущено, когда уже можно стрелять
+    if (!info && held) info = held;
     if (info && info.swap && this._nearLauncher(wx, wy)) { this.swap(); return; }
-    if (!info) return; // отпускание без нажатия (например, после всплывающего окна)
+    if (!info) return; // отпускание без нажатия на поле (например, после всплывающего окна)
     const a = this._angleTo(wx, wy);
-    if (a === null) { this.aim.active = false; return; }
+    if (a === null) { this.aim.active = false; return; } // отпустили ниже пушки — отмена выстрела
     this.aim.angle = a;
-    this.shoot(a);
+    // пушка ещё перезаряжается или камера доезжает — не теряем выстрел, а выполняем, как только будет можно.
+    // Запоминаем точку под пальцем: если камера сдвинется, полетим в тот же шарик, а не просто под тем же углом.
+    if (!this.shoot(a) && this.shotsLeft > 0) this.queued = { x: wx, y: wy, angle: a, t: 1 };
+  }
+
+  /** Жест отменён (системный жест, второй палец, окно поверх поля) — без выстрела */
+  pointerCancel() {
+    this.downInfo = null;
+    this.pressHeld = null;
+    this.queued = null;
+    this.aim.active = false;
   }
 
   pointerLeave() { if (!this.downInfo) this.aim.active = false; }
@@ -271,6 +298,21 @@ export class Engine {
     }
     if (this.reloadT > 0) this.reloadT = Math.max(0, this.reloadT - dt * 6);
     if (this.swapT > 0) this.swapT = Math.max(0, this.swapT - dt * 6);
+    // отложенный выстрел (отпустили во время перезарядки или доводки камеры): стреляем, как только можно, но не позже 1 с
+    if (this.queued) {
+      const q = this.queued;
+      q.t -= dt;
+      if (this.state !== 'aim' || q.t <= 0) this.queued = null;
+      else if (this.canShoot) {
+        this.queued = null;
+        const a = this._angleTo(q.x, q.y) ?? q.angle;
+        this.aim.angle = a;
+        this.shoot(a);
+      }
+    }
+    // палец держат с полёта и не двигают — как только можно целиться, показываем прицел под ним
+    const held = this.pressHeld;
+    if (held && !held.swap && !this.downInfo && this.state === 'aim') this.pointerMove(held.lx, held.ly + this.camY, true);
 
     if (this.state === 'flying') this._updateProjectile(dt);
     else if (this.state === 'win-seq') this._updateWinSequence(dt);

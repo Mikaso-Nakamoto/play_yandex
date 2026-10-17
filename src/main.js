@@ -10,21 +10,33 @@ import { worldOf } from './game/levels.js';
 // Простейший полифилл Pointer Events для старых iOS (Safari < 13)
 function pointerShim() {
   if (window.PointerEvent) return;
-  const fire = (type, src, pt, id, ptype, buttons) => {
+  const fire = (type, src, pt, id, ptype, buttons, primary) => {
     const ev = document.createEvent('Event');
     ev.initEvent(type, true, true);
     ev.clientX = pt.clientX; ev.clientY = pt.clientY; ev.pointerId = id; ev.pointerType = ptype; ev.buttons = buttons;
+    ev.isPrimary = primary;
     (src.target || document).dispatchEvent(ev);
   };
+  // «первичный» палец — тот, что коснулся, когда других пальцев на экране не было (как в Pointer Events)
+  let primaryId = null, lastTouch = 0;
   const map = { touchstart: 'pointerdown', touchmove: 'pointermove', touchend: 'pointerup', touchcancel: 'pointercancel' };
   Object.keys(map).forEach((k) => document.addEventListener(k, (e) => {
+    const ending = k === 'touchend' || k === 'touchcancel';
+    lastTouch = Date.now();
     for (let i = 0; i < e.changedTouches.length; i++) {
       const tch = e.changedTouches[i];
-      fire(map[k], e, tch, tch.identifier + 2, 'touch', k === 'touchend' || k === 'touchcancel' ? 0 : 1);
+      const id = tch.identifier + 2;
+      if (k === 'touchstart' && i === 0 && e.touches.length === e.changedTouches.length) primaryId = id;
+      fire(map[k], e, tch, id, 'touch', ending ? 0 : 1, id === primaryId);
+      if (ending && id === primaryId) primaryId = null;
     }
   }, { passive: false, capture: true }));
+  // после тапа браузер шлёт «совместимые» события мыши — это не второе нажатие (иначе смена шарика срабатывала дважды)
   const mm = { mousedown: 'pointerdown', mousemove: 'pointermove', mouseup: 'pointerup' };
-  Object.keys(mm).forEach((k) => document.addEventListener(k, (e) => fire(mm[k], e, e, 1, 'mouse', e.buttons), true));
+  Object.keys(mm).forEach((k) => document.addEventListener(k, (e) => {
+    if (Date.now() - lastTouch < 1000) return;
+    fire(mm[k], e, e, 1, 'mouse', e.buttons, true);
+  }, true));
 }
 
 function waitFonts(ms) {

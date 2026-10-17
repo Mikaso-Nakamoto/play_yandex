@@ -105,26 +105,41 @@ export class App {
     platform.on('adEnd', () => this.setPause('ad', false));
     platform.on('accountChanged', () => this.onAccountChanged());
 
-    // Ввод на поле
+    // Ввод на поле. Ведём один палец: второй палец не перехватывает прицел и не стреляет.
+    // Новое «первое» касание (isPrimary) сбрасывает зависший палец, если его pointerup потерялся.
     const cv = this.cv;
+    this.activePointer = null;
+    const mine = (e) => this.activePointer === e.pointerId;
+    const release = (e, fire) => {
+      if (!mine(e)) return;
+      this.activePointer = null;
+      if (!this.engine) return;
+      if (!fire || !this.inputAllowed) { this.engine.pointerCancel(); return; }
+      const [x, y] = this.toWorld(e);
+      this.engine.pointerUp(x, y);
+    };
     cv.addEventListener('pointerdown', (e) => {
       if (!this.inputAllowed) return;
+      if (this.activePointer !== null && !mine(e) && !e.isPrimary) return; // второй палец
+      this.activePointer = e.pointerId;
       try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
       const [x, y] = this.toWorld(e);
       this.engine.pointerDown(x, y);
     });
     cv.addEventListener('pointermove', (e) => {
       if (!this.inputAllowed) return;
+      // без нажатия — только наведение мышью (подсказка прицела на ПК)
+      if (this.activePointer === null ? e.pointerType !== 'mouse' : !mine(e)) return;
       const [x, y] = this.toWorld(e);
       this.engine.pointerMove(x, y, e.pointerType !== 'mouse' || e.buttons > 0);
     });
-    cv.addEventListener('pointerup', (e) => {
-      if (!this.inputAllowed) { if (this.engine) this.engine.downInfo = null; return; }
-      const [x, y] = this.toWorld(e);
-      this.engine.pointerUp(x, y);
+    cv.addEventListener('pointerup', (e) => release(e, true));
+    cv.addEventListener('pointercancel', (e) => release(e, false));
+    // захват потерян без pointerup (холст скрыли посреди жеста) — жест отменён
+    cv.addEventListener('lostpointercapture', (e) => release(e, false));
+    cv.addEventListener('pointerleave', (e) => {
+      if (this.engine && (this.activePointer === null || mine(e))) this.engine.pointerLeave();
     });
-    cv.addEventListener('pointercancel', () => { if (this.engine) { this.engine.downInfo = null; this.engine.aim.active = false; } });
-    cv.addEventListener('pointerleave', () => { if (this.engine) this.engine.pointerLeave(); });
 
     // Клавиатура (раскладка не важна — используем e.code)
     window.addEventListener('keydown', (e) => {
@@ -191,6 +206,8 @@ export class App {
       const hardPause = this.pause.size > 0;
       const frozen = hardPause || this.popups.isOpen;
       if (this.engine && this.screen === 'game' && !frozen) this.engine.update(dt);
+      // окно или реклама поверх поля: отложенный выстрел не должен «выстрелить» после закрытия
+      else if (frozen && this.engine && this.engine.queued) this.engine.queued = null;
       if (!this.pause.has('hidden')) {
         try { this.renderer.frame(hardPause ? 0 : dt); } catch (e) { console.error(e); }
       }
