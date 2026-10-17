@@ -1,0 +1,26 @@
+{
+  "name": "meow-bubbles",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Мяу-шарики — бабл-шутер для Яндекс Игр",
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/dev-server.mjs --src",
+    "build": "node tools/build.mjs",
+    "preview": "node tools/build.mjs && node tools/dev-server.mjs --dist",
+    "test": "node tools/test-logic.mjs",
+    "test:flow": "node tools/build.mjs && node tools/flow-test.mjs",
+    "simulate": "node tools/simulate.mjs",
+    "levels": "node tools/gen-level-table.mjs 1000",
+    "promo:art": "node tools/promo-art.mjs",
+    "promo:iap": "node tools/promo-iap-icons.mjs",
+    "promo:shots": "node tools/build.mjs && node tools/promo-shots.mjs",
+    "promo:video": "node tools/build.mjs && node tools/promo-video.mjs",
+    "promo:texts": "node tools/check-texts.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/nunito": "^5.3.0",
+    "esbuild": "^0.25.12",
+    "puppeteer-core": "^25.14.0"
+  }
+}
