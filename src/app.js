@@ -176,14 +176,28 @@ export class App {
   }
 
   // ================= Раскладка =================
+  /** Отступы безопасной зоны (вырез сверху, полоска жеста снизу) в px; внутри iframe Яндекса — 0 */
+  safeInsets() {
+    if (!this.saProbe) {
+      this.saProbe = document.createElement('div');
+      this.saProbe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
+        'padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)';
+      document.body.appendChild(this.saProbe);
+    }
+    const cs = getComputedStyle(this.saProbe);
+    return { top: parseFloat(cs.paddingTop) || 0, bottom: parseFloat(cs.paddingBottom) || 0 };
+  }
+
   computeLayout() {
     const W = Math.max(200, window.innerWidth), H = Math.max(200, window.innerHeight);
-    const fs = clamp(Math.min(W / 25, H / 40), 11, 18);
+    const sa = this.safeInsets();
+    const fs = clamp(Math.min(W / 25, (H - sa.top - sa.bottom) / 40), 11, 18);
     const hudH = Math.round(clamp(fs * 3.6, 44, 68));
-    const availH = H - hudH;
+    // панель уровня — ниже выреза, пушка и бустеры — выше полоски жеста; фон и земля рисуются до краёв экрана
+    const availH = H - sa.top - hudH - sa.bottom;
     const scale = Math.min(W / FIELD_W, availH / VIEW_MIN_H);
     const fw = FIELD_W * scale;
-    return { W, H, fs, hudH, fx: (W - fw) / 2, fy: hudH, fw, fh: availH, scale, viewH: availH / scale };
+    return { W, H, fs, hudH, top: sa.top, safeBottom: sa.bottom, fx: (W - fw) / 2, fy: sa.top + hudH, fw, fh: availH, scale, viewH: availH / scale };
   }
 
   onResize() {
@@ -254,6 +268,7 @@ export class App {
     const e = this.engine;
     if (e && e.special) { store.data.boosters[e.special] = (store.data.boosters[e.special] || 0) + 1; e.special = S_NONE; store.save(); }
     this.hud.hideTip();
+    clearTimeout(this.tutTipT);
     this.tut = null;
   }
 
@@ -485,10 +500,13 @@ export class App {
 
   settingsToggles() {
     const d = store.data;
+    // нажимается вся строка (крупная цель для пальца), переключатель — индикатор
     const row = (ico, label, get, set) => {
-      const sw = h('button', { class: 'switch' + (get() ? ' on' : ''), 'aria-label': label });
-      sw.onclick = () => { set(!get()); sw.classList.toggle('on', get()); store.save(); };
-      return h('div', { class: 'toggle-row' }, h('span', { class: 'lbl' }, h('span', { html: icon(ico) }), label), sw);
+      const sw = h('span', { class: 'switch' + (get() ? ' on' : '') });
+      const r = h('button', { class: 'toggle-row', role: 'switch', 'aria-checked': String(!!get()), 'aria-label': label },
+        h('span', { class: 'lbl' }, h('span', { html: icon(ico) }), label), sw);
+      r.onclick = () => { set(!get()); sw.classList.toggle('on', !!get()); r.setAttribute('aria-checked', String(!!get())); store.save(); };
+      return r;
     };
     return h('div', null,
       row('soundOn', t('sound'), () => d.sound, (v) => { d.sound = v; audio.setSfx(v); }),
@@ -519,8 +537,8 @@ export class App {
       h('div', { class: 'btns' },
         h('button', { class: 'btn btn-gray', onclick: () => this.openHowTo() }, h('span', { html: icon('help') }), t('how_to_play')),
       ),
-      h('p', { class: 'muted', style: { fontSize: '.8em', marginTop: '.8em' } }, t('feedback')),
-      h('p', { class: 'muted', style: { fontSize: '.75em' } }, `${t('version')} ${VERSION}`),
+      h('p', { class: 'muted', style: { fontSize: 'max(.8em, 10.5px)', marginTop: '.8em' } }, t('feedback')),
+      h('p', { class: 'muted', style: { fontSize: 'max(.75em, 10.5px)' } }, `${t('version')} ${VERSION}`),
     );
     this.popups.open({ title: t('settings'), titleClass: 'purple', body, closable: true, id: 'settings' });
   }
@@ -877,14 +895,30 @@ export class App {
 
   onReady() {
     if (!this.tut || !this.engine) return;
+    // подсказка ждёт, пока уйдёт баннер уровня, иначе они накладываются (на коротких уровнях ready — через 0,6 с)
+    const e0 = this.engine;
+    const wait = this.hud.bannerLeft();
+    clearTimeout(this.tutTipT);
+    if (wait > 0) { this.tutTipT = setTimeout(() => { if (this.engine === e0 && this.tut && this.screen === 'game') this.showTutTip(); }, wait); return; }
+    this.showTutTip();
+  }
+
+  /** Где показать подсказку обучения: сразу под шариками, но не ниже, чем нужно для руки над пушкой */
+  tutTipY() {
+    const L = this.L, e = this.engine;
+    const ly = L.fy + (e.launcher()[1] - e.camY) * L.scale;
+    const low = e.board.lowestRow();
+    const boardBottom = L.fy + ((low >= 0 ? e.board.y(low) + 24 : 40) - e.camY) * L.scale;
+    return Math.min(Math.max(L.fy + 8, boardBottom + 12), ly - 260 * L.scale);
+  }
+
+  showTutTip() {
     const L = this.L, e = this.engine;
     const [lxW, lyW] = e.launcher();
     const lx = L.fx + lxW * L.scale;
     const ly = L.fy + (lyW - e.camY) * L.scale;
     // подсказка — сразу под шариками, рука — между подсказкой и пушкой
-    const low = e.board.lowestRow();
-    const boardBottom = L.fy + ((low >= 0 ? e.board.y(low) + 24 : 40) - e.camY) * L.scale;
-    const tipY = Math.min(Math.max(L.fy + 8, boardBottom + 12), ly - 260 * L.scale);
+    const tipY = this.tutTipY();
     switch (this.tut) {
       case 'aim':
         this.hud.showTip(this.isTouch ? t('tut_aim_touch') : t('tut_aim_mouse'), tipY,
@@ -910,7 +944,8 @@ export class App {
     this.tutShots++;
     if (this.tut === 'aim') {
       if (this.tutShots === 1) {
-        this.hud.showTip(t('tut_match'), parseFloat(this.hud.tip.style.top) || this.L.fy + 10);
+        clearTimeout(this.tutTipT); // выстрелил раньше, чем появилась подсказка про прицел, — она уже не нужна
+        this.hud.showTip(t('tut_match'), this.hud.tip.classList.contains('off') ? this.tutTipY() : parseFloat(this.hud.tip.style.top) || this.tutTipY());
       } else if (this.tutShots >= 3) this.finishTut('aim');
     } else if (this.tut === 'kittens' && this.tutShots >= 2) this.finishTut('kittens');
     else if (this.tut === 'swap' && this.tutShots >= 3) this.finishTut('swap');

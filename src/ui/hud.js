@@ -52,16 +52,23 @@ export class Hud {
 
   layout(L) {
     this.L = L;
+    this.top.style.top = (L.top || 0) + 'px'; // под вырезом/строкой состояния — отступ (в iframe он 0)
     this.top.style.height = L.hudH + 'px';
     const maxW = Math.max(L.fw, Math.min(L.W, 560));
     this.top.style.left = Math.max(0, (L.W - maxW) / 2) + 'px';
     this.top.style.right = Math.max(0, (L.W - maxW) / 2) + 'px';
     const size = Math.max(40, Math.round(48 * L.scale));
     const cy = L.fy + (L.viewH - LAUNCH_FROM_BOTTOM + 4) * L.scale;
+    // на мелком поле кнопка не меньше 40 px, поэтому шаг не меньше кнопки + 3 px (иначе бустеры налезают
+    // друг на друга); правый бустер не выходит за экран. На обычных экранах позиции прежние: 300/354/408.
+    const gap = Math.max(54 * L.scale, size + 3);
+    const launcherX = L.fx + (FIELD_W / 2) * L.scale;
+    const clear = launcherX + 20 * L.scale + 6 + size / 2 + (BOOSTERS.length - 1) * gap; // левый бустер не заходит на пушку
+    const right = Math.min(L.W - size / 2 - 3, Math.max(L.fx + Math.min(FIELD_W - 30, 408) * L.scale, clear));
     BOOSTERS.forEach((b, i) => {
       const btn = this.boostBtns[b];
-      const cx = L.fx + Math.min(FIELD_W - 30, 300 + i * 54) * L.scale;
-      Object.assign(btn.style, { width: size + 'px', height: size + 'px', left: (cx - size / 2) + 'px', top: (cy - size / 2) + 'px', fontSize: Math.max(11, size * 0.3) + 'px' });
+      const cx = right - (BOOSTERS.length - 1 - i) * gap;
+      Object.assign(btn.style, { width: size + 'px', height: size + 'px', left: (cx - size / 2) + 'px', top: (cy - size / 2) + 'px', fontSize: Math.max(13.5, size * 0.32) + 'px' });
     });
     Object.assign(this.boostWrap.style, { left: '0', top: '0', right: '0', bottom: '0' });
   }
@@ -93,7 +100,7 @@ export class Hud {
     if (e.mode === 'endless') {
       this.scoreVal.innerHTML = '';
       this.scoreVal.append(h('b', null, fmt(e.score)));
-      this.scoreVal.append(h('div', { style: { fontSize: '.7em', opacity: '.85' } }, `${t('best')}: ${fmt(Math.max(store.data.endlessBest, e.score))}`));
+      this.scoreVal.append(h('div', { style: { fontSize: 'max(.7em, 10px)', lineHeight: '1.25', marginTop: '.12em', opacity: '.85' } }, `${t('best')}: ${fmt(Math.max(store.data.endlessBest, e.score))}`));
       return;
     }
     const left = e.goalLeft;
@@ -131,7 +138,14 @@ export class Hud {
     void b.offsetWidth;
     b.classList.add('show');
     clearTimeout(this.bannerT);
+    this.bannerEnd = performance.now() + 1950;
     this.bannerT = setTimeout(() => b.classList.add('hidden'), 1950);
+  }
+
+  /** Сколько мс ещё виден баннер уровня (подсказки обучения ждут его, чтобы не накладываться) */
+  bannerLeft() {
+    if (this.banner.classList.contains('hidden')) return 0;
+    return Math.max(0, (this.bannerEnd || 0) - performance.now());
   }
 
   goalText(engine) {
